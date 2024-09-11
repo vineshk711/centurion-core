@@ -1,4 +1,4 @@
-package com.fortuna.centurion_core;
+package com.centurion.centurion_core;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

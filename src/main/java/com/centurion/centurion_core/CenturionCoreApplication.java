@@ -1,4 +1,4 @@
-package com.fortuna.centurion_core;
+package com.centurion.centurion_core;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

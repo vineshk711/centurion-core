@@ -15,7 +15,7 @@ import java.util.Map;
 @Builder
 public class ExternalHttpRequest {
 
-    private Serializable data;
+    private Serializable body;
     private String url;
     private HttpMethod httpMethod;
     private Map<String, Object> uriParams;

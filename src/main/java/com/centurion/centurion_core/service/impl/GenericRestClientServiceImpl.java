@@ -32,7 +32,7 @@ public class GenericRestClientServiceImpl implements GenericRestClientService {
         var httpMethod = request.getHttpMethod();
         log.debug("Calling endpoint [{}] : [{}]", httpMethod, url);
 
-        var httpEntity = prepareHTTPEntity(httpMethod, request.getData(), request.getHeaders());
+        var httpEntity = prepareHTTPEntity(httpMethod, request.getBody(), request.getHeaders());
         long startTime = 0;
         long endTime = 0;
         ResponseEntity<T> response = null;

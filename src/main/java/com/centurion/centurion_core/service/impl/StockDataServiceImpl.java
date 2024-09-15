@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.centurion.centurion_core.constants.CenturionConstants.DATA_SORT_BY;
+import static com.centurion.centurion_core.constants.CenturionConstants.DATA_SORT_TYPE;
 import static com.centurion.centurion_core.constants.ExternalURI.*;
 
 @Service
@@ -26,6 +28,9 @@ public class StockDataServiceImpl implements StockDataService {
         this.genericRestClientService = genericRestClientService;
         this.allStocksRepository = allStocksRepository;
     }
+
+    public static final Integer PAGE_SIZE = 500;
+    public static final Integer TOTAL_PAGE = 9;
 
     @Override
     @Transactional

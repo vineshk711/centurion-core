@@ -1,18 +1,15 @@
 package com.centurion.centurion_core.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class StocksDataResponse {
     private List<StocksData> records;
     private Integer totalRecords;
 
-    @Getter
-    @Setter
+    @Data
     public static class StocksData {
         private String isin;
         private String growwContractId;
@@ -26,11 +23,10 @@ public class StocksDataResponse {
         private Double yearlyLowPrice;
         private Double closePrice;
         private Long marketCap;
-        private LivePriceDto livePriceDto;
+        private LivePriceDto livePriceDto; //TODO remove this
     }
 
-    @Getter
-    @Setter
+    @Data
     private static class LivePriceDto {
         private String type;
         private String symbol;

@@ -11,7 +11,7 @@ import lombok.Setter;
 public class AllStocksEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "company_name")
     private String companyName;

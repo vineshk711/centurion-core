@@ -1,13 +1,11 @@
 package com.centurion.centurion_core.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serializable;
 
-@Getter
-@Setter
+@Data
 public class StockDataRequest implements Serializable {
     private ListFilters listFilters;
     private ObjFilters objFilters;
@@ -26,9 +24,8 @@ public class StockDataRequest implements Serializable {
         this.objFilters = new ObjFilters();
     }
 
-    @Getter
-    @Setter
-    public class ListFilters {
+    @Data
+    public static class ListFilters implements Serializable {
         @JsonProperty("INDUSTRY")
         private String[] industry;
         @JsonProperty("INDEX")
@@ -41,9 +38,8 @@ public class StockDataRequest implements Serializable {
 
     }
 
-    @Getter
-    @Setter
-    public class ObjFilters {
+    @Data
+    public static class ObjFilters implements Serializable {
         @JsonProperty("CLOSE_PRICE")
         private PriceFilter closePrice;
         @JsonProperty("MARKET_CAP")
@@ -55,9 +51,8 @@ public class StockDataRequest implements Serializable {
         }
     }
 
-    @Setter
-    @Getter
-    public class PriceFilter {
+    @Data
+    public static class PriceFilter implements Serializable {
         private Double max;
         private Double min;
     }

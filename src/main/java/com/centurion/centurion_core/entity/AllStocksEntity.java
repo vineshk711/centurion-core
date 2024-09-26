@@ -16,19 +16,12 @@ public class AllStocksEntity {
     @Column(name = "company_name", unique = true)
     private String companyName;
 
-    @Column(name = "company_short_name")
-    private String companyShortName;
-
-    @Column(name = "industry_code")
-    private Short industryCode;
-
-    @Column(name = "bse_script_code")
-    private Integer bseScriptCode;
-
-    @Column(name = "nse_script_code")
-    private String nseScriptCode;
-
     @Column(name = "market_cap")
     private Long marketCap;
 
+    @Column(name = "stock_id")
+    private String stockId;
+
+    @Column(name = "sector")
+    private String sector;
 }

@@ -55,7 +55,7 @@ public class GenericRestClientServiceImpl implements GenericRestClientService {
     }
 
     private void logExecutionTime(HttpMethod httpMethod, String url, long startTime, long endTime, int statusCode) {
-        log.info("Time taken to execute [{}]: {} is {} ms with status code: {}",
+        log.info("Time taken to execute external API call [{}]: {} is {} ms with status code: {}",
                 httpMethod, url, endTime - startTime, statusCode);
     }
 

@@ -23,8 +23,4 @@ public class StockDataController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(ALL)
-    public ResponseEntity<Object> allStocksMetaData() {
-        return ResponseEntity.ok(dataFetchService.saveStocksMetaData());
-    }
 }

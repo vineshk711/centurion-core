@@ -1,8 +1,6 @@
 package com.centurion.centurion_core.service.impl;
 
-import com.centurion.centurion_core.dto.ExternalHttpRequest;
-import com.centurion.centurion_core.dto.StockDataRequest;
-import com.centurion.centurion_core.dto.StocksDataResponse;
+import com.centurion.centurion_core.dto.*;
 import com.centurion.centurion_core.entity.AllStocksEntity;
 import com.centurion.centurion_core.mapper.StockDataMapper;
 import com.centurion.centurion_core.repository.AllStocksRepository;

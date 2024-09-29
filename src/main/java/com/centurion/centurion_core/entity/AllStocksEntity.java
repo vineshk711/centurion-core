@@ -30,5 +30,4 @@ public class AllStocksEntity {
 
     @Column(name = "market_cap")
     private Long marketCap;
-
 }

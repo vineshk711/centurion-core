@@ -22,4 +22,5 @@ public class StockDataController {
         dataFetchService.fetchAllStocksMetaData();
         return ResponseEntity.ok().build();
     }
+
 }

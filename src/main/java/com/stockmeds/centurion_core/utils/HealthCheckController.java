@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/health/check")
 public class HealthCheckController {
 
     private final Environment env;

@@ -20,6 +20,8 @@ public class OtpService {
     }
 
     public boolean validateOtp(String phoneNumber, String otp) {
-        return otp.equals(otpStorage.get(phoneNumber));
+        boolean isValid = otp.equals(otpStorage.get(phoneNumber));
+        otpStorage.remove(phoneNumber);
+        return isValid;
     }
 }

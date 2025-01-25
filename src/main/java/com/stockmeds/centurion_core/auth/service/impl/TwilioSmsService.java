@@ -13,22 +13,22 @@ import org.springframework.stereotype.Service;
 public class TwilioSmsService implements SmsService {
 
     public static final String ACCOUNT_SID = "ACe62b7b00e0b775981e9cc726ec5bca19";
-    public static final String AUTH_TOKEN = "xxxxx";
-    public static final String FROM = "xxxxx";
+    public static final String AUTH_TOKEN = "xxxxxxxxx";
+    public static final String FROM = "+645665323";
 
 
     @Async
     @Override
     public void sendSms(String phoneNumber, String otp) {
-        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-
-        Message message = Message
-                .creator(
-                        new PhoneNumber(phoneNumber),
-                        new PhoneNumber(FROM),
-                        String.format("%s is your StockMeds one time password valid for 5 minutes", otp)
-                )
-                .create();
-        log.info("Sending otp to phone: {} with sid: {}", phoneNumber, message.getSid());
+//        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+//
+//        Message message = Message
+//                .creator(
+//                        new PhoneNumber(phoneNumber),
+//                        new PhoneNumber(FROM),
+//                        String.format("%s is your StockMeds one time password valid for 5 minutes", otp)
+//                )
+//                .create();
+        log.info("Sending sms to phone: {} with otp: {}", phoneNumber, otp);
     }
 }

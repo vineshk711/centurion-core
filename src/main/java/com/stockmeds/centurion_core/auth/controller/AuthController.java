@@ -1,11 +1,10 @@
 package com.stockmeds.centurion_core.auth.controller;
 
+import com.stockmeds.centurion_core.auth.dto.OtpRequest;
+import com.stockmeds.centurion_core.auth.dto.OtpResponse;
 import com.stockmeds.centurion_core.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -18,12 +17,12 @@ public class AuthController {
     }
 
     @PostMapping("/send-otp")
-    public ResponseEntity<Object> sendOtp(@RequestParam String phoneNumber) {
-        return ResponseEntity.ok(authService.sendOtp(phoneNumber));
+    public ResponseEntity<OtpResponse> sendOtp(@RequestBody OtpRequest loginRequest) {
+        return ResponseEntity.ok(authService.sendOtp(loginRequest));
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<Object> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
-        return ResponseEntity.ok(authService.verifyOtp(phoneNumber, otp));
+    public ResponseEntity<OtpResponse> verifyOtp(@RequestBody OtpRequest loginRequest) {
+        return ResponseEntity.ok(authService.verifyOtp(loginRequest));
     }
 }

@@ -1,5 +1,6 @@
 package com.stockmeds.centurion_core.auth.service;
 
+import com.stockmeds.centurion_core.auth.dto.OtpRequest;
 import com.stockmeds.centurion_core.auth.dto.OtpResponse;
 import com.stockmeds.centurion_core.exception.CustomException;
 import com.stockmeds.centurion_core.utils.JwtUtil;
@@ -27,16 +28,17 @@ public class AuthService {
 
 
 
-    public OtpResponse sendOtp(String phoneNumber) {
-        String otp = otpService.generateOtp(phoneNumber);
-        smsService.sendSms(phoneNumber, otp);
+    public OtpResponse sendOtp(OtpRequest loginRequest) {
+        String otp = otpService.generateOtp(loginRequest.getPhoneNumber());
+        smsService.sendSms(loginRequest.getPhoneNumber(), otp);
+//        throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, USER_NOT_FOUND);
         return OtpResponse.builder().message("OTP send successfully!").build();
     }
 
-    public Object verifyOtp(String phoneNumber, String otp) {
-        boolean isValid = otpService.validateOtp(phoneNumber, otp);
+    public OtpResponse verifyOtp(OtpRequest loginRequest) {
+        boolean isValid = otpService.validateOtp(loginRequest.getPhoneNumber(), loginRequest.getOtp());
         if (isValid) {
-            String jwtToken = jwtUtil.generateToken(phoneNumber);
+            String jwtToken = jwtUtil.generateToken(loginRequest.getPhoneNumber());
             return OtpResponse.builder()
                     .token(jwtToken)
                     .message("success")

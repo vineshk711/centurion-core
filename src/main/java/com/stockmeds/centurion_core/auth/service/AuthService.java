@@ -31,7 +31,6 @@ public class AuthService {
     public OtpResponse sendOtp(OtpRequest loginRequest) {
         String otp = otpService.generateOtp(loginRequest.getPhoneNumber());
         smsService.sendSms(loginRequest.getPhoneNumber(), otp);
-//        throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, USER_NOT_FOUND);
         return OtpResponse.builder().message("OTP send successfully!").build();
     }
 

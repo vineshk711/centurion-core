@@ -57,10 +57,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (ExpiredJwtException e) {
+            log.warn("Unauthorized access, token expired: [{}] {}", request.getMethod(), request.getRequestURI());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(JWT_EXPIRED.getMessage());
             return;
         } catch (Exception e) {
+            log.warn("Unauthorized access, invalid token: [{}] {}", request.getMethod(), request.getRequestURI());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(INVALID_JWT.getMessage());
             return;

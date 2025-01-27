@@ -20,7 +20,7 @@ public class CenturionInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         request.setAttribute(START_TIME, System.currentTimeMillis());
         Map<String, String > headers = extractRequestHeaderValues(request);
-        log.info("Executing incoming request [{}]: {} with query params: {} and headers: {}", request.getMethod(),
+        log.info("Executing incoming request: [{}] {} with query params: {} and headers: {}", request.getMethod(),
                 request.getRequestURI(), request.getQueryString(), headers);
         return true;
     }
@@ -28,7 +28,7 @@ public class CenturionInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         long timeTaken = fetchRequestExecutionTime(request);
-        log.info("Time taken to execute [{}]: {} is {} ms with status code: {}", request.getMethod(), request.getRequestURI(),
+        log.info("Time taken to execute: [{}] {} is {} ms with status code: {}", request.getMethod(), request.getRequestURI(),
                 timeTaken, response.getStatus());
     }
 

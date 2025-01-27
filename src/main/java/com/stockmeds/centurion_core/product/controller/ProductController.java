@@ -2,6 +2,11 @@ package com.stockmeds.centurion_core.product.controller;
 
 import com.stockmeds.centurion_core.product.entity.Product;
 import com.stockmeds.centurion_core.product.service.ProductService;
+import com.twilio.http.Response;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +18,7 @@ public class ProductController {
 
 
     private final ProductService productService;
+
 
     public ProductController (
             ProductService productService
@@ -26,14 +32,15 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String searchTerm) {
-        return ResponseEntity.ok(productService.searchProducts(searchTerm));
-    }
 
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable Integer categoryId) {
         return ResponseEntity.ok(productService.findProductsByCategory(categoryId));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<Product>> getAllProducts(@PageableDefault(sort = "name") Pageable pageable) {
+        return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 }
 

@@ -9,9 +9,9 @@ services:
     depends_on:
       - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockmeds
+      SPRING_DATASOURCE_USERNAME: centurion_core
+      SPRING_DATASOURCE_PASSWORD: CenturionCore@800
     networks:
       - app-network
 
@@ -19,9 +19,9 @@ services:
     image: postgres:15
     container_name: postgres-db
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stockmeds
+      POSTGRES_USER: centurion_core
+      POSTGRES_PASSWORD: CenturionCore@800
     ports:
       - "5432:5432"
     volumes:

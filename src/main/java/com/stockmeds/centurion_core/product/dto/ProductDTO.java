@@ -1,27 +1,22 @@
-package com.stockmeds.centurion_core.product.entity;
+package com.stockmeds.centurion_core.product.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Date;
 
-@Entity
-@Table(name = "products")
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ProductDTO {
     private Integer id;
-
     private String name;
     private String description;
     private Integer categoryId;
@@ -41,13 +36,4 @@ public class Product {
     private String hsnCode;
     private BigDecimal gstPercentage;
     private Boolean prescriptionRequired;
-
-    @Column(columnDefinition = "tsvector")
-    private String searchVector;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

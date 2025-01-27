@@ -2,12 +2,14 @@ package com.stockmeds.centurion_core.product.service;
 
 
 import com.stockmeds.centurion_core.product.entity.Product;
+import com.stockmeds.centurion_core.product.entity.ProductCategory;
 import com.stockmeds.centurion_core.product.repository.ProductCategoryRepository;
 import com.stockmeds.centurion_core.product.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -24,19 +26,40 @@ public class ProductService {
         this.productCategoryRepository = productCategoryRepository;
     }
 
-    // Full-text search
-    public List<Product> searchProducts(String searchTerm) {
-//        return productRepository.searchProducts(searchTerm);
-        return null;
+    public Product getProduct(Integer productId) {
+        return productRepository.findById(productId)
+                .orElse(null);
     }
 
-    // Find products by category
     public List<Product> findProductsByCategory(Integer categoryId) {
         return productRepository.findByCategoryId(categoryId);
     }
 
-    public Product getProduct(Integer productId) {
-        Optional<Product> productOptional = productRepository.findById(productId);
-        return productOptional.orElse(null);
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(product -> Product.builder()
+                        .id(product.getId())
+                        .name(product.getName())
+                        .price(product.getPrice())
+                        .brand(product.getBrand())
+                        .strength(product.getStrength())
+                        .unitOfMeasure(product.getUnitOfMeasure())
+                        .categoryId(product.getCategoryId())
+                        .build());
+    }
+
+    public ProductCategory getProductCategory(Integer categoryId) {
+        return productCategoryRepository.findById(categoryId)
+                .orElse(null);
+    }
+
+    public Page<ProductCategory> getAllCategories(Pageable pageable) {
+        return productCategoryRepository.findAll(pageable)
+                .map(category -> ProductCategory.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .parentCategoryId(category.getParentCategoryId())
+                        .description(category.getDescription())
+                        .build());
     }
 }

@@ -33,6 +33,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
+        log.error("Server exception occurred", ex);
         return buildErrorResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.UNKNOWN);
     }
 

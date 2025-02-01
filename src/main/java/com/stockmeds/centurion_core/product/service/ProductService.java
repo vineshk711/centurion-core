@@ -26,6 +26,8 @@ public class ProductService {
         this.productCategoryRepository = productCategoryRepository;
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+
     public Product getProduct(Integer productId) {
         return productRepository.findById(productId)
                 .orElse(null);
@@ -53,13 +55,7 @@ public class ProductService {
                 .orElse(null);
     }
 
-    public Page<ProductCategory> getAllCategories(Pageable pageable) {
-        return productCategoryRepository.findAll(pageable)
-                .map(category -> ProductCategory.builder()
-                        .id(category.getId())
-                        .name(category.getName())
-                        .parentCategoryId(category.getParentCategoryId())
-                        .description(category.getDescription())
-                        .build());
+    public List<ProductCategory> getAllCategories() {
+        return productCategoryRepository.findByParentCategoryIsNull();
     }
 }

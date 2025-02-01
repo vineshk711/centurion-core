@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ProductCategoryRepository extends JpaRepository<ProductCategory, Integer> {
-    List<ProductCategory> findByCategoryPathStartingWith(String categoryPath);
+    //TODO return only relevant data
+    List<ProductCategory> findByParentCategoryIsNull();
 }
 

@@ -1,33 +1,37 @@
 package com.stockmeds.centurion_core.product.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.List;
 
 @Entity
-@Table(name = "product_categories")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@JsonInclude(value = JsonInclude.Include.NON_NULL)
+@Table(name = "product_categories")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Ignore Hibernate proxies
 public class ProductCategory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String name;
-    private Integer parentCategoryId;
     private String description;
 
-    @Column(name = "category_path", columnDefinition = "ltree")
-    private String categoryPath;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_category_id")
+    @JsonIgnore  // Prevent circular reference
+    private ProductCategory parentCategory;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductCategory> subcategories;
 }
+
 

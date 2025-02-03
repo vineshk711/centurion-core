@@ -33,7 +33,7 @@ build/
 .vscode/
 
 catalina.base_IS_UNDEFINED/
-**mvnw
+
 
 pom.xml.tag
 pom.xml.releaseBackup

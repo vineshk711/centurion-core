@@ -19,9 +19,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          
-      - name: Debug GitHub Workspace
-        run: ls -la
         
       - name: Build Application JAR
         run: |

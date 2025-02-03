@@ -8,8 +8,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     ports:
       - "8080:8080"
     networks:
@@ -33,7 +33,7 @@ services:
     environment:
       POSTGRES_DB: stockmeds
       POSTGRES_USER: centurion_core
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: CenturionCore@800
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:

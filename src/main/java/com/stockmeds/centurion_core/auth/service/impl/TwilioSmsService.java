@@ -20,15 +20,15 @@ public class TwilioSmsService implements SmsService {
     @Async
     @Override
     public void sendSms(String phoneNumber, String otp) {
-//        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-//
-//        Message message = Message
-//                .creator(
-//                        new PhoneNumber(phoneNumber),
-//                        new PhoneNumber(FROM),
-//                        String.format("%s is your StockMeds one time password valid for 5 minutes", otp)
-//                )
-//                .create();
-        log.info("Sending sms to phone: {} with otp: {}", phoneNumber, otp);
+        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+
+        Message message = Message
+                .creator(
+                        new PhoneNumber(phoneNumber),
+                        new PhoneNumber(FROM),
+                        String.format("%s is your StockMeds one time password. This OTP valid for 5 minutes", otp)
+                )
+                .create();
+        log.info("Sending otp sms to phone: {}, sid: {}", phoneNumber, message.getSid());
     }
 }

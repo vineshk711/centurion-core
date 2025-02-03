@@ -17,12 +17,10 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copy the built jar from the build stage
-COPY --from=build /app/target/centurion-core-0.0.1-SNAPSHOT.jar /app/app.jar
-
-ENV SPRING_PROFILES_ACTIVE=dev
+COPY --from=build /app/target/*.jar /app/app.jar
 
 # Expose port 8080
 EXPOSE 8080
 
-# Define default command to run the application with JVM optimizations
-CMD ["java", "-XX:+UseContainerSupport", "-Xmx512m", "-Xms256m", "-jar", "/app/app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]

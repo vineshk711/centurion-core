@@ -11,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class OtpService {
     private final Random random = new Random();
+
+    //TODO define TTL for otpStorage
+    //TODO move otp storage to centerilized cache when multiple instances are required
     private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
 
     public String generateOtp(String phoneNumber) {

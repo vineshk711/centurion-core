@@ -24,6 +24,7 @@ public class ProductCategory {
 
     private String name;
     private String description;
+    private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")

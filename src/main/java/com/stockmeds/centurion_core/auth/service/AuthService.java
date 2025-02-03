@@ -2,8 +2,10 @@ package com.stockmeds.centurion_core.auth.service;
 
 import com.stockmeds.centurion_core.auth.dto.OtpRequest;
 import com.stockmeds.centurion_core.auth.dto.OtpResponse;
+import com.stockmeds.centurion_core.auth.service.impl.MockSmsService;
 import com.stockmeds.centurion_core.exception.CustomException;
 import com.stockmeds.centurion_core.utils.JwtUtil;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +21,7 @@ public class AuthService {
     public AuthService(
             JwtUtil jwtUtil,
             OtpService otpService,
-            SmsService smsService
+            MockSmsService smsService
     ) {
         this.jwtUtil = jwtUtil;
         this.otpService = otpService;

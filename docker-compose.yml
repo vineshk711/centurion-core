@@ -2,35 +2,58 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    image: stockmeds/centurion-core:latest
     container_name: centurion-core
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stockmeds
-      SPRING_DATASOURCE_USERNAME: centurion_core
-      SPRING_DATASOURCE_PASSWORD: CenturionCore@800
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/check"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "10m"
+#        max-file: "3"
 
-  postgres:
-    image: postgres:15
+  db:
+    image: postgres:16-alpine
     container_name: postgres-db
+    restart: always
     environment:
       POSTGRES_DB: stockmeds
       POSTGRES_USER: centurion_core
-      POSTGRES_PASSWORD: CenturionCore@800
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U centurion_core -d stockmeds"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 networks:
   app-network:
+    driver: bridge
 
 volumes:
-  postgres-data:
+  db-data:
+    driver: local
+    driver_opts:
+      type: "none"
+      device: "/mnt/ebs-volume"
+      o: "bind"

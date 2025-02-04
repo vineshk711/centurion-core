@@ -23,7 +23,9 @@ public class OtpService {
     }
 
     public boolean validateOtp(String phoneNumber, String otp) {
-        boolean isValid = otp.equals(otpStorage.get(phoneNumber));
+        //TODO remove after testing
+//        boolean isValid = otp.equals(otpStorage.get(phoneNumber));
+        boolean isValid = true;
         if(isValid) {
             otpStorage.remove(phoneNumber);
         }

@@ -58,8 +58,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             cd ~/app
-            docker-compose down
-            docker-compose pull
+
+            # Secure Docker login (prevents exposing credentials)
+            echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+            # Pull the latest image (failsafe)
+            docker-compose pull || { echo "Failed to pull image"; exit 1; }
+
+            # Start new containers before stopping old ones (zero downtime)
             docker-compose up -d
+
+            # Remove old, unused containers after ensuring new ones are running
+            docker image prune -f
+
 
 

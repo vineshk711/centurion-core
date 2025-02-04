@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     image: stockmeds/centurion-core:latest
@@ -10,6 +8,11 @@ services:
         condition: service_healthy
     # env_file:
     #   - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/stockmeds
+      SPRING_DATASOURCE_USERNAME: centurion_core
+      SPRING_DATASOURCE_PASSWORD: CenturionCore@800
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
       - "8080:8080"
     networks:

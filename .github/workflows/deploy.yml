@@ -38,6 +38,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Upload docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml"
+          target: "~/app"
+
       - name: SSH into EC2 and Deploy
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -45,8 +57,9 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
-            docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
-            docker pull stockmeds/centurion-core:latest
             cd ~/app
             docker-compose down
+            docker-compose pull
             docker-compose up -d
+
+

@@ -13,7 +13,7 @@ public class OtpService {
     private final Random random = new Random();
 
     //TODO define TTL for otpStorage
-    //TODO move otp storage to centerilized cache when multiple instances are required
+    //TODO move otp storage to centrilized cache (must in case of multiple instances are needed)
     private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
 
     public String generateOtp(String phoneNumber) {
@@ -23,7 +23,7 @@ public class OtpService {
     }
 
     public boolean validateOtp(String phoneNumber, String otp) {
-        //TODO remove after testing
+        //TODO remove after testing add check for null otp
 //        boolean isValid = otp.equals(otpStorage.get(phoneNumber));
         boolean isValid = true;
         if(isValid) {

@@ -19,10 +19,9 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public Object getUser(Integer userId) {
+    public UserDTO getUser() {
         UserAccountAttributes userAccountAttributes = CenturionThreadLocal.getUserAccountAttributes();
-        log.info("userAccountAttributes {}", userAccountAttributes);
-        return userRepository.findById(userId).map(User::toUserDTO).orElse(null);
+        return userRepository.findById(userAccountAttributes.getUserId()).map(User::toUserDTO).orElse(null);
     }
 
     public UserDTO getUserByPhoneNumber(String phoneNumber) {

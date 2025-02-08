@@ -8,9 +8,9 @@ public enum ErrorCode {
     EXTERNAL_CALL_FAILED(1002, "External API call failed"),
     USER_NOT_FOUND(1003, "User not found"),
     INVALID_OTP(1004, "Verification failed"),
-    INVALID_JWT(1004, "Invalid JWT"),
-    JWT_EXPIRED(1004, "Session expired"),
-    INVALID_REQUEST(1005, "Invalid Request");
+    INVALID_JWT(1005, "Invalid JWT"),
+    JWT_EXPIRED(1006, "Session expired"),
+    INVALID_REQUEST(1007, "Invalid Request");
 
     private final Integer code;
     private final String message;

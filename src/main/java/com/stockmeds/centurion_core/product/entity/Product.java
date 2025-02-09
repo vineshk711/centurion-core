@@ -1,7 +1,7 @@
 package com.stockmeds.centurion_core.product.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.stockmeds.centurion_core.product.dto.ProductDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,9 +13,6 @@ import java.util.Date;
 @Table(name = "products")
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Product {
     @Id
@@ -50,4 +47,29 @@ public class Product {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public ProductDTO toProductDTO() {
+        return ProductDTO.builder()
+                .id(id)
+                .name(name)
+                .description(description)
+                .categoryId(categoryId)
+                .brand(brand)
+                .manufacturer(manufacturer)
+                .price(price)
+                .stockQuantity(stockQuantity)
+                .unitOfMeasure(unitOfMeasure)
+                .variantName(variantName)
+                .strength(strength)
+                .packaging(packaging)
+                .salts(salts)
+                .indications(indications)
+                .keyIngredients(keyIngredients)
+                .expiryDate(expiryDate)
+                .batchNumber(batchNumber)
+                .hsnCode(hsnCode)
+                .gstPercentage(gstPercentage)
+                .prescriptionRequired(prescriptionRequired)
+                .build();
+    }
 }

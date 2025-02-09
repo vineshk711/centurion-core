@@ -1,6 +1,8 @@
 package com.stockmeds.centurion_core.product.service;
 
 
+import com.stockmeds.centurion_core.product.dto.ProductCategoryDTO;
+import com.stockmeds.centurion_core.product.dto.ProductDTO;
 import com.stockmeds.centurion_core.product.entity.Product;
 import com.stockmeds.centurion_core.product.entity.ProductCategory;
 import com.stockmeds.centurion_core.product.repository.ProductCategoryRepository;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -28,34 +31,43 @@ public class ProductService {
 
     //------------------------------------------------------------------------------------------------------------------
 
-    public Product getProduct(Integer productId) {
-        return productRepository.findById(productId)
-                .orElse(null);
+    public ProductDTO getProduct(Integer productId) {
+        return productRepository.findById(productId).map(Product::toProductDTO).orElse(null);
     }
 
-    public List<Product> findProductsByCategory(Integer categoryId) {
-        return productRepository.findByCategoryId(categoryId);
+    public Page<ProductDTO> getProductsByCategory(Integer categoryId, Pageable pageable) {
+        return productRepository.findByCategoryId(categoryId, pageable)
+                .map(Product::toProductDTO);
     }
 
-    public Page<Product> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable)
-                .map(product -> Product.builder()
-                        .id(product.getId())
-                        .name(product.getName())
-                        .price(product.getPrice())
-                        .brand(product.getBrand())
-                        .strength(product.getStrength())
-                        .unitOfMeasure(product.getUnitOfMeasure())
-                        .categoryId(product.getCategoryId())
-                        .build());
+
+    public Page<ProductDTO> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable).map(Product::toProductDTO);
     }
 
-    public ProductCategory getProductCategory(Integer categoryId) {
+    public ProductCategoryDTO getProductCategory(Integer categoryId) {
         return productCategoryRepository.findById(categoryId)
-                .orElse(null);
+                .map(ProductCategory::toProductCategoryDTO).orElse(null);
     }
 
-    public List<ProductCategory> getAllCategories() {
-        return productCategoryRepository.findByParentCategoryIsNull();
+    public List<ProductCategoryDTO> getAllCategories() {
+        return productCategoryRepository.findByParentCategoryIsNull()
+                .stream().map(category -> ProductCategoryDTO.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .imageUrl(category.getImageUrl())
+                        .subcategories(category.getSubcategories())
+                        .build())
+                .toList();
+    }
+
+    public List<ProductCategoryDTO> getCategoriesByParentId(Integer parentId) {
+        return productCategoryRepository.findByParentCategoryId(parentId)
+                .stream().map(category -> ProductCategoryDTO.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .imageUrl(category.getImageUrl())
+                        .build())
+                .toList();
     }
 }

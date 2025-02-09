@@ -1,5 +1,6 @@
 package com.stockmeds.centurion_core.product.controller;
 
+import com.stockmeds.centurion_core.product.dto.ProductDTO;
 import com.stockmeds.centurion_core.product.entity.Product;
 import com.stockmeds.centurion_core.product.service.ProductService;
 import com.twilio.http.Response;
@@ -28,18 +29,19 @@ public class ProductController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable("id") Integer productId) {
+    public ResponseEntity<ProductDTO> getProduct(@PathVariable("id") Integer productId) {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 
 
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable Integer categoryId) {
-        return ResponseEntity.ok(productService.findProductsByCategory(categoryId));
+    public ResponseEntity<Page<ProductDTO>> getProductsByCategory(@PathVariable Integer categoryId,
+                                                                  @PageableDefault(sort = "name") Pageable pageable) {
+        return ResponseEntity.ok(productService.getProductsByCategory(categoryId, pageable));
     }
 
     @GetMapping
-    public ResponseEntity<Page<Product>> getAllProducts(@PageableDefault(sort = "name") Pageable pageable) {
+    public ResponseEntity<Page<ProductDTO>> getAllProducts(@PageableDefault(sort = "name") Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 }

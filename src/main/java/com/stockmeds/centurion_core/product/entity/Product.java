@@ -38,6 +38,7 @@ public class Product {
     private String hsnCode;
     private BigDecimal gstPercentage;
     private Boolean prescriptionRequired;
+    private String imageUrl;
 
     @Column(columnDefinition = "tsvector")
     private String searchVector;
@@ -70,6 +71,7 @@ public class Product {
                 .hsnCode(hsnCode)
                 .gstPercentage(gstPercentage)
                 .prescriptionRequired(prescriptionRequired)
+                .imageUrl(imageUrl)
                 .build();
     }
 }

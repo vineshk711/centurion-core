@@ -36,4 +36,5 @@ public class ProductDTO {
     private String hsnCode;
     private BigDecimal gstPercentage;
     private Boolean prescriptionRequired;
+    private String imageUrl;
 }

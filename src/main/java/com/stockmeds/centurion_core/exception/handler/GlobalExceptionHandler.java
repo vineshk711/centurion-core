@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.exception.handler;
 
-import com.stockmeds.centurion_core.dto.ErrorResponse;
+import com.stockmeds.centurion_core.record.ErrorResponse;
 import com.stockmeds.centurion_core.enums.ErrorCode;
 
 import com.stockmeds.centurion_core.exception.CustomException;

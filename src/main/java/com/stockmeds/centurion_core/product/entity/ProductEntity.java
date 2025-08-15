@@ -1,7 +1,6 @@
 package com.stockmeds.centurion_core.product.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.stockmeds.centurion_core.product.dto.ProductDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class Product {
+public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -49,29 +48,29 @@ public class Product {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public ProductDTO toProductDTO() {
-        return ProductDTO.builder()
-                .id(id)
-                .name(name)
-                .description(description)
-                .categoryId(categoryId)
-                .brand(brand)
-                .manufacturer(manufacturer)
-                .price(price)
-                .stockQuantity(stockQuantity)
-                .unitOfMeasure(unitOfMeasure)
-                .variantName(variantName)
-                .strength(strength)
-                .packaging(packaging)
-                .salts(salts)
-                .indications(indications)
-                .keyIngredients(keyIngredients)
-                .expiryDate(expiryDate)
-                .batchNumber(batchNumber)
-                .hsnCode(hsnCode)
-                .gstPercentage(gstPercentage)
-                .prescriptionRequired(prescriptionRequired)
-                .imageUrl(imageUrl)
-                .build();
+    public com.stockmeds.centurion_core.product.record.Product toProductDTO() {
+        return new com.stockmeds.centurion_core.product.record.Product(
+                id,
+                name,
+                description,
+                categoryId,
+                brand,
+                manufacturer,
+                price,
+                stockQuantity,
+                unitOfMeasure,
+                variantName,
+                strength,
+                packaging,
+                salts,
+                indications,
+                keyIngredients,
+                expiryDate,
+                batchNumber,
+                hsnCode,
+                gstPercentage,
+                prescriptionRequired,
+                imageUrl
+        );
     }
 }

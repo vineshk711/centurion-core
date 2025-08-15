@@ -1,9 +1,9 @@
 package com.stockmeds.centurion_core.user.service;
 
-import com.stockmeds.centurion_core.auth.dto.UserAccountAttributes;
+import com.stockmeds.centurion_core.auth.record.UserAccountAttributes;
 import com.stockmeds.centurion_core.config.CenturionThreadLocal;
-import com.stockmeds.centurion_core.user.dto.UserDTO;
-import com.stockmeds.centurion_core.user.entity.User;
+import com.stockmeds.centurion_core.user.record.User;
+import com.stockmeds.centurion_core.user.entity.UserEntity;
 import com.stockmeds.centurion_core.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -19,26 +19,28 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public UserDTO getUser() {
+    public User getUser() {
         UserAccountAttributes userAccountAttributes = CenturionThreadLocal.getUserAccountAttributes();
-        return userRepository.findById(userAccountAttributes.getUserId()).map(User::toUserDTO).orElse(null);
+        return userRepository.findById(userAccountAttributes.getUserId())
+                .map(User::fromUserEntity)
+                .orElse(null);
     }
 
-    public UserDTO getUserByPhoneNumber(String phoneNumber) {
+    public User getUserByPhoneNumber(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber)
-                .map(User::toUserDTO)
+                .map(User::fromUserEntity)
                 .orElse(null);
     }
 
     @Transactional
-    public UserDTO getOrSaveUserIfAbsent(String phoneNumber) {
+    public User getOrSaveUserIfAbsent(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber)
-                .map(User::toUserDTO)
-                .orElseGet(() -> userRepository.insertIfAbsent(phoneNumber)
-                        .orElseGet(() -> userRepository.findByPhoneNumber(phoneNumber)
-                                .orElseThrow(() -> new IllegalStateException("User should exist but was not found"))
-                        ).toUserDTO()
-                );
+                .map(User::fromUserEntity)
+                .orElseGet(() -> {
+                    UserEntity userEntity = new UserEntity();
+                    userEntity.setPhoneNumber(phoneNumber);
+                    return User.fromUserEntity(userRepository.save(userEntity));
+                });
     }
 
 }

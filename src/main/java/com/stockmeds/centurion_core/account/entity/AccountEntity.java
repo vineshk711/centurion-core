@@ -2,9 +2,8 @@ package com.stockmeds.centurion_core.account.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.stockmeds.centurion_core.account.AccountDTO;
 import com.stockmeds.centurion_core.account.enums.AccountStatus;
-import com.stockmeds.centurion_core.user.entity.User;
+import com.stockmeds.centurion_core.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +20,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Account {
+public class AccountEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -32,7 +31,7 @@ public class Account {
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", unique = true, insertable = false, updatable = false)
-    private User owner;
+    private UserEntity owner;
 
     @Column(name = "owner_id")
     private Integer ownerId;
@@ -69,17 +68,16 @@ public class Account {
         updatedAt = LocalDateTime.now();
     }
 
-    public AccountDTO toAccountDTO() {
-        return AccountDTO.builder()
-               .id(id)
-               .name(name)
-               .ownerId(ownerId)
-               .address(address)
-               .gstNumber(gstNumber)
-               .drugLicenseNumber(drugLicenseNumber)
-               .accountStatus(accountStatus)
-               .imageUrl(imageUrl)
-               .build();
+    public com.stockmeds.centurion_core.account.record.Account toAccountDTO() {
+        return new com.stockmeds.centurion_core.account.record.Account(
+                id,
+                name,
+                ownerId,
+                address,
+                gstNumber,
+                drugLicenseNumber,
+                accountStatus,
+                imageUrl
+        );
     }
 }
-

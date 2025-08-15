@@ -56,7 +56,3 @@ networks:
 volumes:
   db-data:
     driver: local
-    driver_opts:
-      type: "none"
-      device: "/mnt/ebs-volume"
-      o: "bind"

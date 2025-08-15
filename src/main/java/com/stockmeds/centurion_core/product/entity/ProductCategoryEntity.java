@@ -1,7 +1,6 @@
 package com.stockmeds.centurion_core.product.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.stockmeds.centurion_core.product.dto.ProductCategoryDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +13,7 @@ import java.util.List;
 @Setter
 @Table(name = "product_categories")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Ignore Hibernate proxies
-public class ProductCategory {
+public class ProductCategoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,21 +26,20 @@ public class ProductCategory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")
     @JsonIgnore  // Prevent circular reference
-    private ProductCategory parentCategory;
+    private ProductCategoryEntity parentCategory;
 
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductCategory> subcategories;
+    private List<ProductCategoryEntity> subcategories;
 
 
-    public ProductCategoryDTO toProductCategoryDTO() {
-        return ProductCategoryDTO.builder()
-                .id(id)
-                .name(name)
-                .description(description)
-                .imageUrl(imageUrl)
-                .subcategories(subcategories)
-                .build();
+    public com.stockmeds.centurion_core.product.record.ProductCategory toProductCategoryDTO() {
+        return new com.stockmeds.centurion_core.product.record.ProductCategory(
+                id,
+                name,
+                parentCategory != null ? parentCategory.getId() : null,
+                description,
+                imageUrl,
+                subcategories
+        );
     }
 }
-
-

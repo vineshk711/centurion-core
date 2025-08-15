@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.service.impl;
 
-import com.stockmeds.centurion_core.dto.ExternalHttpRequest;
+import com.stockmeds.centurion_core.record.ExternalHttpRequest;
 import com.stockmeds.centurion_core.enums.ErrorCode;
 
 import com.stockmeds.centurion_core.exception.ExternalCallException;
@@ -29,11 +29,11 @@ public class RestClientServiceImpl implements RestRestClientService {
 
     @Override
     public <T> T execute(ExternalHttpRequest request, Class<T> responseType) {
-        var url = appendQueryParams(request.getUrl(), request.getUriParams());
-        var httpMethod = request.getHttpMethod();
+        var url = appendQueryParams(request.url(), request.uriParams());
+        var httpMethod = request.httpMethod();
         log.debug("Calling endpoint [{}] : [{}]", httpMethod, url);
 
-        var httpEntity = prepareHTTPEntity(httpMethod, request.getBody(), request.getHeaders());
+        var httpEntity = prepareHTTPEntity(httpMethod, request.body(), request.headers());
         long startTime = 0;
         long endTime = 0;
         ResponseEntity<T> response = null;

@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.product.controller;
 
-import com.stockmeds.centurion_core.product.dto.ProductCategoryDTO;
+import com.stockmeds.centurion_core.product.record.ProductCategory;
 import com.stockmeds.centurion_core.product.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,18 +26,18 @@ public class ProductCategoryController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductCategoryDTO> getProductCategory(@PathVariable("id") Integer categoryId) {
+    public ResponseEntity<ProductCategory> getProductCategory(@PathVariable("id") Integer categoryId) {
         return ResponseEntity.ok(productService.getProductCategory(categoryId));
     }
 
 
     @GetMapping
-    public ResponseEntity<List<ProductCategoryDTO>> getAllCategories() {
+    public ResponseEntity<List<ProductCategory>> getAllCategories() {
         return ResponseEntity.ok(productService.getAllCategories());
     }
 
     @GetMapping("/parent/{parentId}")
-    public ResponseEntity<List<ProductCategoryDTO>> getCategoriesByParentId(@PathVariable Integer parentId) {
+    public ResponseEntity<List<ProductCategory>> getCategoriesByParentId(@PathVariable Integer parentId) {
         return ResponseEntity.ok(productService.getCategoriesByParentId(parentId));
     }
 

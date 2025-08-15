@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.config;
 
-import com.stockmeds.centurion_core.auth.dto.UserAccountAttributes;
+import com.stockmeds.centurion_core.auth.record.UserAccountAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;

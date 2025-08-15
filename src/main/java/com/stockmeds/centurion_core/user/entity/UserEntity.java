@@ -1,8 +1,7 @@
 package com.stockmeds.centurion_core.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.stockmeds.centurion_core.account.entity.Account;
-import com.stockmeds.centurion_core.user.dto.UserDTO;
+import com.stockmeds.centurion_core.account.entity.AccountEntity;
 import com.stockmeds.centurion_core.user.enums.UserRole;
 import com.stockmeds.centurion_core.user.enums.UserStatus;
 import jakarta.persistence.*;
@@ -19,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -58,7 +57,7 @@ public class User {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", insertable = false, updatable = false)
-    private Account account;
+    private AccountEntity account;
 
     @PrePersist
     protected void onCreate() {
@@ -70,18 +69,4 @@ public class User {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    public UserDTO toUserDTO() {
-        return UserDTO.builder()
-                .id(this.getId())
-                .phoneNumber(this.getPhoneNumber())
-                .fullName(this.getFullName())
-                .email(this.getEmail())
-                .role(this.getRole())
-                .userStatus(this.getUserStatus())
-                .isVerified(this.isVerified())
-                .accountId(this.getAccountId())
-                .build();
-    }
 }
-

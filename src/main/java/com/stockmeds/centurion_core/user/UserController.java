@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.user;
 
-import com.stockmeds.centurion_core.user.dto.UserDTO;
+import com.stockmeds.centurion_core.user.record.User;
 import com.stockmeds.centurion_core.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +18,7 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<UserDTO> getUser() {
+    public ResponseEntity<User> getUser() {
         return ResponseEntity.ok(userService.getUser());
     }
 }

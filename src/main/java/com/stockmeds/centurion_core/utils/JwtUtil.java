@@ -1,6 +1,5 @@
 package com.stockmeds.centurion_core.utils;
 
-import com.stockmeds.centurion_core.user.dto.UserDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -12,10 +11,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
-
-import static com.stockmeds.centurion_core.constants.Constants.*;
 
 @Component
 public class JwtUtil {

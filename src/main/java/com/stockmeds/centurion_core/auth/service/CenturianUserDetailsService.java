@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.auth.service;
 
-import com.stockmeds.centurion_core.auth.dto.UserAccountAttributes;
+import com.stockmeds.centurion_core.auth.record.UserAccountAttributes;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 

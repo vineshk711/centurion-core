@@ -1,4 +1,4 @@
-package com.stockmeds.centurion_core.auth.dto;
+package com.stockmeds.centurion_core.auth.record;
 
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.config;
 
-import com.stockmeds.centurion_core.auth.dto.UserAccountAttributes;
+import com.stockmeds.centurion_core.auth.record.UserAccountAttributes;
 import com.stockmeds.centurion_core.auth.service.CenturianUserDetailsService;
 import com.stockmeds.centurion_core.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;

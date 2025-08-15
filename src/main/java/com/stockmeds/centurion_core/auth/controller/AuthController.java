@@ -1,7 +1,7 @@
 package com.stockmeds.centurion_core.auth.controller;
 
-import com.stockmeds.centurion_core.auth.dto.OtpRequest;
-import com.stockmeds.centurion_core.auth.dto.OtpResponse;
+import com.stockmeds.centurion_core.auth.record.OtpRequest;
+import com.stockmeds.centurion_core.auth.record.OtpResponse;
 import com.stockmeds.centurion_core.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

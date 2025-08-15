@@ -1,6 +1,6 @@
 package com.stockmeds.centurion_core.product.controller;
 
-import com.stockmeds.centurion_core.product.dto.ProductDTO;
+import com.stockmeds.centurion_core.product.record.Product;
 import com.stockmeds.centurion_core.product.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,19 +24,19 @@ public class ProductController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> getProduct(@PathVariable("id") Integer productId) {
+    public ResponseEntity<Product> getProduct(@PathVariable("id") Integer productId) {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 
 
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Page<ProductDTO>> getProductsByCategory(@PathVariable Integer categoryId,
-                                                                  @PageableDefault(sort = "name") Pageable pageable) {
+    public ResponseEntity<Page<Product>> getProductsByCategory(@PathVariable Integer categoryId,
+                                                               @PageableDefault(sort = "name") Pageable pageable) {
         return ResponseEntity.ok(productService.getProductsByCategory(categoryId, pageable));
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductDTO>> getAllProducts(@PageableDefault(sort = "name") Pageable pageable) {
+    public ResponseEntity<Page<Product>> getAllProducts(@PageableDefault(sort = "name") Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 }

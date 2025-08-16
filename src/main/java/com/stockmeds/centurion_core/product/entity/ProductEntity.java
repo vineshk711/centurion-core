@@ -47,30 +47,4 @@ public class ProductEntity {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public com.stockmeds.centurion_core.product.record.Product toProductDTO() {
-        return new com.stockmeds.centurion_core.product.record.Product(
-                id,
-                name,
-                description,
-                categoryId,
-                brand,
-                manufacturer,
-                price,
-                stockQuantity,
-                unitOfMeasure,
-                variantName,
-                strength,
-                packaging,
-                salts,
-                indications,
-                keyIngredients,
-                expiryDate,
-                batchNumber,
-                hsnCode,
-                gstPercentage,
-                prescriptionRequired,
-                imageUrl
-        );
-    }
 }

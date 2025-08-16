@@ -28,13 +28,6 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProduct(productId));
     }
 
-
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Page<Product>> getProductsByCategory(@PathVariable Integer categoryId,
-                                                               @PageableDefault(sort = "name") Pageable pageable) {
-        return ResponseEntity.ok(productService.getProductsByCategory(categoryId, pageable));
-    }
-
     @GetMapping
     public ResponseEntity<Page<Product>> getAllProducts(@PageableDefault(sort = "name") Pageable pageable) {
         return ResponseEntity.ok(productService.getAllProducts(pageable));

@@ -20,7 +20,6 @@ public class ProductEntity {
 
     private String name;
     private String description;
-    private Integer categoryId;
     private String brand;
     private String manufacturer;
     private BigDecimal price;
@@ -37,10 +36,6 @@ public class ProductEntity {
     private String hsnCode;
     private BigDecimal gstPercentage;
     private Boolean prescriptionRequired;
-    private String imageUrl;
-
-    @Column(columnDefinition = "tsvector")
-    private String searchVector;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

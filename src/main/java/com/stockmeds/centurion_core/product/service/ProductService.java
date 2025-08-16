@@ -27,11 +27,6 @@ public class ProductService {
         return productRepository.findById(productId).map(Product::fromProductEntity).orElse(null);
     }
 
-    public Page<Product> getProductsByCategory(Integer categoryId, Pageable pageable) {
-        return productRepository.findByCategoryId(categoryId, pageable)
-                .map(Product::fromProductEntity);
-    }
-
 
     public Page<Product> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable).map(Product::fromProductEntity);

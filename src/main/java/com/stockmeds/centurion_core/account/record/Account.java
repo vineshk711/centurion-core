@@ -12,19 +12,18 @@ public record Account(
     String address,
     String gstNumber,
     String drugLicenseNumber,
-    AccountStatus accountStatus,
-    String imageUrl
+    AccountStatus accountStatus
 ) {
-    public AccountEntity toAccountEntity() {
-        return AccountEntity.builder()
-                .id(this.id())
-                .name(this.name())
-                .ownerId(this.ownerId())
-                .address(this.address())
-                .gstNumber(this.gstNumber())
-                .drugLicenseNumber(this.drugLicenseNumber())
-                .accountStatus(this.accountStatus())
-                .imageUrl(this.imageUrl())
-                .build();
+
+    public static Account fromAccountEntity(AccountEntity accountEntity) {
+        return new Account(
+            accountEntity.getId(),
+            accountEntity.getName(),
+            accountEntity.getOwnerId(),
+            accountEntity.getAddress(),
+            accountEntity.getGstNumber(),
+            accountEntity.getDrugLicenseNumber(),
+            accountEntity.getAccountStatus()
+        );
     }
 }

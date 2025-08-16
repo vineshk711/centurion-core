@@ -45,9 +45,6 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus = UserStatus.ACTIVE;
 
-    @Column(name = "account_id")
-    private Integer accountId;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

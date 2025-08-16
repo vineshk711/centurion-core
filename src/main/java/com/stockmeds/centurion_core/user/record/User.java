@@ -13,8 +13,7 @@ public record User(
     String email,
     UserRole role,
     UserStatus userStatus,
-    Boolean isVerified,
-    Integer accountId
+    Boolean isVerified
 ) {
 
     public static User fromUserEntity(UserEntity userEntity) {
@@ -25,8 +24,7 @@ public record User(
                 userEntity.getEmail(),
                 userEntity.getRole(),
                 userEntity.getUserStatus(),
-                userEntity.isVerified(),
-                userEntity.getAccountId()
+                userEntity.isVerified()
         );
     }
 }

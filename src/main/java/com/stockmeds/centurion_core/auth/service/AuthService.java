@@ -1,5 +1,7 @@
 package com.stockmeds.centurion_core.auth.service;
 
+import com.stockmeds.centurion_core.account.record.Account;
+import com.stockmeds.centurion_core.account.service.AccountService;
 import com.stockmeds.centurion_core.auth.record.OtpRequest;
 import com.stockmeds.centurion_core.auth.record.OtpResponse;
 import com.stockmeds.centurion_core.auth.service.impl.MockSmsService;
@@ -30,17 +32,20 @@ public class AuthService {
     private final OtpService otpService;
     private final SmsService smsService;
     private final UserService userService;
+    private final AccountService accountService;
 
     public AuthService(
             JwtUtil jwtUtil,
             OtpService otpService,
             MockSmsService smsService,
-            UserService userService
+            UserService userService,
+            AccountService accountService
     ) {
         this.jwtUtil = jwtUtil;
         this.otpService = otpService;
         this.smsService = smsService;
         this.userService = userService;
+        this.accountService = accountService;
     }
 
 
@@ -65,10 +70,10 @@ public class AuthService {
 
     private Map<String, Object> getJwtClaims(User user) {
         if (isNull(user)) return Collections.emptyMap();
-
+        Account account = accountService.getAccountByOwnerId(user.id());
         var claims = new HashMap<String, Object>();
         Optional.ofNullable(user.id()).ifPresent(id -> claims.put(USER_ID, id));
-        Optional.ofNullable(user.accountId()).ifPresent(accountId -> claims.put(ACCOUNT_ID, accountId));
+        Optional.ofNullable(account.id()).ifPresent(accountId -> claims.put(ACCOUNT_ID, accountId));
         return claims;
     }
 }

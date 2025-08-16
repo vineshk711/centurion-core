@@ -3,6 +3,7 @@ package com.stockmeds.centurion_core.account.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.stockmeds.centurion_core.account.enums.AccountStatus;
+import com.stockmeds.centurion_core.account.record.Account;
 import com.stockmeds.centurion_core.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,7 +47,7 @@ public class AccountEntity {
 
     @Column(name = "account_status")
     @Enumerated(EnumType.STRING)
-    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+    private AccountStatus accountStatus;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -66,18 +67,5 @@ public class AccountEntity {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    public com.stockmeds.centurion_core.account.record.Account toAccountDTO() {
-        return new com.stockmeds.centurion_core.account.record.Account(
-                id,
-                name,
-                ownerId,
-                address,
-                gstNumber,
-                drugLicenseNumber,
-                accountStatus,
-                imageUrl
-        );
     }
 }

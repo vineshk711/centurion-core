@@ -1,14 +1,12 @@
-package com.stockmeds.centurion_core.user;
+package com.stockmeds.centurion_core.user.controller;
 
 import com.stockmeds.centurion_core.user.record.User;
 import com.stockmeds.centurion_core.user.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/user")
 public class UserController {
 
     private final UserService userService;
@@ -17,9 +15,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/user")
+    @GetMapping()
     public ResponseEntity<User> getUser() {
         return ResponseEntity.ok(userService.getUser());
+    }
+
+    @PutMapping()
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        return ResponseEntity.ok(userService.updateUser(user));
     }
 }
 

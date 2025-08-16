@@ -29,7 +29,7 @@ public class AccountService {
 
     public void createAccount(Integer ownerId) {
         AccountEntity account = new AccountEntity();
-        account.setName(STR."Account of \{ownerId}");
+        account.setName(String.format("Account of %s", ownerId));
         account.setOwnerId(ownerId);
         account.setAccountStatus(AccountStatus.INCOMPLETE);
         accountRepository.save(account);

@@ -40,10 +40,10 @@ public class CartController {
     }
 
     @DeleteMapping("/remove/{productId}")
-    public ResponseEntity<Void> removeFromCart(@PathVariable Integer productId) {
+    public ResponseEntity<CartResponse> removeFromCart(@PathVariable Integer productId) {
         Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        cartService.removeFromCart(accountId, productId);
-        return ResponseEntity.noContent().build();
+        CartResponse cart = cartService.removeFromCart(accountId, productId);
+        return ResponseEntity.ok(cart);
     }
 
     @DeleteMapping("/clear")

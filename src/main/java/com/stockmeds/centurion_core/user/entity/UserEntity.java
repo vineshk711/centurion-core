@@ -51,6 +51,9 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "account_id")
+    private Integer accountId;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", insertable = false, updatable = false)

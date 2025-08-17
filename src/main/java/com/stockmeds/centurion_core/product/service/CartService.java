@@ -85,6 +85,10 @@ public class CartService {
             cartItemRepository.delete(cartItem);
         } else {
             cartItem.setQuantity(request.quantity());
+            // Explicitly recalculate total price to ensure consistency
+            if (cartItem.getUnitPrice() != null) {
+                cartItem.setTotalPrice(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(request.quantity())));
+            }
             cartItemRepository.save(cartItem);
         }
 
@@ -92,11 +96,21 @@ public class CartService {
     }
 
     @Transactional
-    public void removeFromCart(Integer accountId, Integer productId) {
+    public CartResponse removeFromCart(Integer accountId, Integer productId) {
         Cart cart = cartRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
+        // Verify the item exists before deletion
+        Optional<CartItem> existingItem = cartItemRepository
+                .findByCartIdAndProductId(cart.getId(), productId);
+
+        if (existingItem.isEmpty()) {
+            throw new RuntimeException("Product not found in cart");
+        }
+
         cartItemRepository.deleteByCartIdAndProductId(cart.getId(), productId);
+
+        return getCart(accountId);
     }
 
     @Transactional

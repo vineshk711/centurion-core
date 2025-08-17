@@ -1,6 +1,5 @@
 package com.stockmeds.centurion_core.product.controller;
 
-import com.stockmeds.centurion_core.config.CenturionThreadLocal;
 import com.stockmeds.centurion_core.enums.PaymentStatus;
 import com.stockmeds.centurion_core.enums.Status;
 import com.stockmeds.centurion_core.product.record.OrderResponse;
@@ -24,29 +23,25 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponse> placeOrder(@RequestBody PlaceOrderRequest request) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        OrderResponse order = orderService.placeOrder(accountId, request);
+        OrderResponse order = orderService.placeOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
     @PostMapping("/from-cart")
     public ResponseEntity<OrderResponse> placeOrderFromCart(@RequestBody PlaceOrderRequest request) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        OrderResponse order = orderService.placeOrderFromCart(accountId, request);
+        OrderResponse order = orderService.placeOrderFromCart(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAccountOrders() {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        List<OrderResponse> orders = orderService.getAccountOrders(accountId);
+        List<OrderResponse> orders = orderService.getAccountOrders();
         return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long orderId) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        OrderResponse order = orderService.getOrder(accountId, orderId);
+        OrderResponse order = orderService.getOrder(orderId);
         return ResponseEntity.ok(order);
     }
 

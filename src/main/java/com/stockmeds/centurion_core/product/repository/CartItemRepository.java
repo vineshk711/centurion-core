@@ -13,15 +13,17 @@ import java.util.Optional;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-    List<CartItem> findByCartId(Long cartId);
+    // Find all cart items for an account (replaces findByCartId)
+    List<CartItem> findByAccountId(Integer accountId);
 
-    Optional<CartItem> findByCartIdAndProductId(Long cartId, Integer productId);
-
-    @Modifying
-    @Query("DELETE FROM CartItem ci WHERE ci.cart.id = :cartId")
-    void deleteByCartId(@Param("cartId") Long cartId);
+    // Find specific cart item by account and product
+    Optional<CartItem> findByAccountIdAndProductId(Integer accountId, Integer productId);
 
     @Modifying
-    @Query("DELETE FROM CartItem ci WHERE ci.cart.id = :cartId AND ci.product.id = :productId")
-    void deleteByCartIdAndProductId(@Param("cartId") Long cartId, @Param("productId") Integer productId);
+    @Query("DELETE FROM CartItem ci WHERE ci.accountId = :accountId")
+    void deleteByAccountId(@Param("accountId") Integer accountId);
+
+    @Modifying
+    @Query("DELETE FROM CartItem ci WHERE ci.accountId = :accountId AND ci.product.id = :productId")
+    void deleteByAccountIdAndProductId(@Param("accountId") Integer accountId, @Param("productId") Integer productId);
 }

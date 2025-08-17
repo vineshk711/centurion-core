@@ -1,8 +1,10 @@
 package com.stockmeds.centurion_core.product.service;
 
+import com.stockmeds.centurion_core.config.CenturionThreadLocal;
+import com.stockmeds.centurion_core.exception.CustomException;
+import com.stockmeds.centurion_core.enums.ErrorCode;
 import com.stockmeds.centurion_core.enums.PaymentStatus;
 import com.stockmeds.centurion_core.enums.Status;
-import com.stockmeds.centurion_core.product.entity.Cart;
 import com.stockmeds.centurion_core.product.entity.CartItem;
 import com.stockmeds.centurion_core.product.entity.Order;
 import com.stockmeds.centurion_core.product.entity.OrderItem;
@@ -10,11 +12,11 @@ import com.stockmeds.centurion_core.product.entity.ProductEntity;
 import com.stockmeds.centurion_core.product.record.OrderResponse;
 import com.stockmeds.centurion_core.product.record.PlaceOrderRequest;
 import com.stockmeds.centurion_core.product.repository.CartItemRepository;
-import com.stockmeds.centurion_core.product.repository.CartRepository;
 import com.stockmeds.centurion_core.product.repository.OrderItemRepository;
 import com.stockmeds.centurion_core.product.repository.OrderRepository;
 import com.stockmeds.centurion_core.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,25 +32,23 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
-    private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
 
     public OrderService(
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
             ProductRepository productRepository,
-            CartRepository cartRepository,
             CartItemRepository cartItemRepository
     ) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
-        this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
     }
 
     @Transactional
-    public OrderResponse placeOrder(Integer accountId, PlaceOrderRequest request) {
+    public OrderResponse placeOrder(PlaceOrderRequest request) {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
         // Create new order
         Order order = new Order();
         order.setAccountId(accountId);
@@ -70,7 +70,7 @@ public class OrderService {
         // Create order items
         for (PlaceOrderRequest.OrderItemRequest itemRequest : request.items()) {
             ProductEntity product = productRepository.findById(itemRequest.productId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + itemRequest.productId()));
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.PRODUCT_NOT_FOUND));
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -101,6 +101,7 @@ public class OrderService {
 
         order = orderRepository.save(order);
 
+        //TODO: is this required?
         // Clear account's cart after successful order
         clearAccountCart(accountId);
 
@@ -108,14 +109,14 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse placeOrderFromCart(Integer accountId, PlaceOrderRequest request) {
-        Cart cart = cartRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+    public OrderResponse placeOrderFromCart(PlaceOrderRequest request) {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
 
-        List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+        // Get cart items directly by accountId (no Cart entity needed)
+        List<CartItem> cartItems = cartItemRepository.findByAccountId(accountId);
 
         if (cartItems.isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.CART_EMPTY);
         }
 
         // Create new order
@@ -173,23 +174,26 @@ public class OrderService {
         return mapToOrderResponse(order);
     }
 
-    public List<OrderResponse> getAccountOrders(Integer accountId) {
+    //TODO: paginate this API
+    public List<OrderResponse> getAccountOrders() {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
         List<Order> orders = orderRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
         return orders.stream()
                 .map(this::mapToOrderResponse)
                 .toList();
     }
 
-    public OrderResponse getOrder(Integer accountId, Long orderId) {
+    public OrderResponse getOrder(Long orderId) {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
         Order order = orderRepository.findByIdAndAccountId(orderId, accountId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.ORDER_NOT_FOUND));
 
         return mapToOrderResponse(order);
     }
 
     public OrderResponse getOrderByNumber(String orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.ORDER_NOT_FOUND));
 
         return mapToOrderResponse(order);
     }
@@ -197,7 +201,7 @@ public class OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, Status status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.ORDER_NOT_FOUND));
 
         order.setStatus(status);
         order = orderRepository.save(order);
@@ -208,7 +212,7 @@ public class OrderService {
     @Transactional
     public OrderResponse updatePaymentStatus(Long orderId, PaymentStatus paymentStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.ORDER_NOT_FOUND));
 
         order.setPaymentStatus(paymentStatus);
 
@@ -222,9 +226,8 @@ public class OrderService {
     }
 
     private void clearAccountCart(Integer accountId) {
-        cartRepository.findByAccountId(accountId).ifPresent(cart ->
-            cartItemRepository.deleteByCartId(cart.getId())
-        );
+        // Directly delete cart items by accountId (no Cart entity needed)
+        cartItemRepository.deleteByAccountId(accountId);
     }
 
     private String generateOrderNumber() {

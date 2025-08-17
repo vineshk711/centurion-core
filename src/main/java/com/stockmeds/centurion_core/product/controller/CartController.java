@@ -1,6 +1,5 @@
 package com.stockmeds.centurion_core.product.controller;
 
-import com.stockmeds.centurion_core.config.CenturionThreadLocal;
 import com.stockmeds.centurion_core.product.record.AddToCartRequest;
 import com.stockmeds.centurion_core.product.record.CartResponse;
 import com.stockmeds.centurion_core.product.record.UpdateCartItemRequest;
@@ -20,36 +19,31 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<CartResponse> getCart() {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        CartResponse cart = cartService.getCart(accountId);
+        CartResponse cart = cartService.getCart();
         return ResponseEntity.ok(cart);
     }
 
     @PostMapping("/add")
     public ResponseEntity<CartResponse> addToCart(@RequestBody AddToCartRequest request) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        CartResponse cart = cartService.addToCart(accountId, request);
+        CartResponse cart = cartService.addToCart(request);
         return ResponseEntity.ok(cart);
     }
 
     @PutMapping("/update")
     public ResponseEntity<CartResponse> updateCartItem(@RequestBody UpdateCartItemRequest request) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        CartResponse cart = cartService.updateCartItem(accountId, request);
+        CartResponse cart = cartService.updateCartItem(request);
         return ResponseEntity.ok(cart);
     }
 
     @DeleteMapping("/remove/{productId}")
     public ResponseEntity<CartResponse> removeFromCart(@PathVariable Integer productId) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        CartResponse cart = cartService.removeFromCart(accountId, productId);
+        CartResponse cart = cartService.removeFromCart(productId);
         return ResponseEntity.ok(cart);
     }
 
     @DeleteMapping("/clear")
     public ResponseEntity<Void> clearCart() {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        cartService.clearCart(accountId);
+        cartService.clearCart();
         return ResponseEntity.noContent().build();
     }
 }

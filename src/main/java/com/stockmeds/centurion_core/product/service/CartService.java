@@ -1,147 +1,142 @@
 package com.stockmeds.centurion_core.product.service;
 
-import com.stockmeds.centurion_core.product.entity.Cart;
+import com.stockmeds.centurion_core.config.CenturionThreadLocal;
+import com.stockmeds.centurion_core.exception.CustomException;
+import com.stockmeds.centurion_core.enums.ErrorCode;
 import com.stockmeds.centurion_core.product.entity.CartItem;
 import com.stockmeds.centurion_core.product.entity.ProductEntity;
 import com.stockmeds.centurion_core.product.record.AddToCartRequest;
 import com.stockmeds.centurion_core.product.record.CartResponse;
 import com.stockmeds.centurion_core.product.record.UpdateCartItemRequest;
 import com.stockmeds.centurion_core.product.repository.CartItemRepository;
-import com.stockmeds.centurion_core.product.repository.CartRepository;
 import com.stockmeds.centurion_core.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CartService {
 
-    private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
 
     public CartService(
-            CartRepository cartRepository,
             CartItemRepository cartItemRepository,
             ProductRepository productRepository
     ) {
-        this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
     }
 
-    public CartResponse getCart(Integer accountId) {
-        Optional<Cart> cartOpt = cartRepository.findByAccountId(accountId);
+    public CartResponse getCart() {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
+        List<CartItem> cartItems = cartItemRepository.findByAccountId(accountId);
 
-        if (cartOpt.isEmpty()) {
-            return createEmptyCartResponse(accountId);
+        if (cartItems.isEmpty()) {
+            return CartResponse.empty(accountId);
         }
 
-        Cart cart = cartOpt.get();
-        List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
-
-        return mapToCartResponse(cart, cartItems);
+        return mapToCartResponse(accountId, cartItems);
     }
 
     @Transactional
-    public CartResponse addToCart(Integer accountId, AddToCartRequest request) {
-        Cart cart = getOrCreateCart(accountId);
+    public CartResponse addToCart(AddToCartRequest request) {
+        if(request.quantity() <= 0) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_QUANTITY);
+        }
 
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
+
+        // Validate that the product exists
         ProductEntity product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.PRODUCT_NOT_FOUND));
 
-        Optional<CartItem> existingItem = cartItemRepository
-                .findByCartIdAndProductId(cart.getId(), request.productId());
+        // Try to find existing cart item directly by account and product
+        Optional<CartItem> existingCartItem = cartItemRepository
+                .findByAccountIdAndProductId(accountId, request.productId());
 
-        if (existingItem.isPresent()) {
-            CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + request.quantity());
+        // Calculate total quantity needed (existing quantity + new quantity)
+        int currentCartQuantity = existingCartItem.map(CartItem::getQuantity).orElse(0);
+        int totalQuantityNeeded = currentCartQuantity + request.quantity();
+
+        // Validate stock availability
+        if (product.getStockQuantity() == null || product.getStockQuantity() < totalQuantityNeeded) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.INSUFFICIENT_STOCK);
+        }
+
+        if (existingCartItem.isPresent()) {
+            // Update existing cart item
+            CartItem item = existingCartItem.get();
+            item.setQuantity(totalQuantityNeeded);
             cartItemRepository.save(item);
         } else {
+            // Create new cart item directly
             CartItem newItem = new CartItem();
-            newItem.setCart(cart);
+            newItem.setAccountId(accountId);
             newItem.setProduct(product);
             newItem.setQuantity(request.quantity());
             newItem.setUnitPrice(product.getPrice());
             cartItemRepository.save(newItem);
         }
 
-        return getCart(accountId);
+        return getCart();
     }
 
     @Transactional
-    public CartResponse updateCartItem(Integer accountId, UpdateCartItemRequest request) {
+    public CartResponse updateCartItem(UpdateCartItemRequest request) {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
         CartItem cartItem = cartItemRepository.findById(request.cartItemId())
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.CART_ITEM_NOT_FOUND));
 
-        if (!cartItem.getCart().getAccountId().equals(accountId)) {
-            throw new RuntimeException("Unauthorized access to cart item");
+        // Ensure the cart item belongs to the user
+        if (!cartItem.getAccountId().equals(accountId)) {
+            throw new CustomException(HttpStatus.FORBIDDEN, ErrorCode.UNAUTHORIZED_CART_ACCESS);
         }
 
         if (request.quantity() <= 0) {
             cartItemRepository.delete(cartItem);
         } else {
-            cartItem.setQuantity(request.quantity());
-            // Explicitly recalculate total price to ensure consistency
-            if (cartItem.getUnitPrice() != null) {
-                cartItem.setTotalPrice(cartItem.getUnitPrice().multiply(BigDecimal.valueOf(request.quantity())));
+            // Validate stock availability when updating quantity
+            ProductEntity product = cartItem.getProduct();
+            if (product.getStockQuantity() == null || product.getStockQuantity() < request.quantity()) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.INSUFFICIENT_STOCK);
             }
+
+            cartItem.setQuantity(request.quantity());
             cartItemRepository.save(cartItem);
         }
 
-        return getCart(accountId);
+        return getCart();
     }
 
     @Transactional
-    public CartResponse removeFromCart(Integer accountId, Integer productId) {
-        Cart cart = cartRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+    public CartResponse removeFromCart(Integer productId) {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
 
-        // Verify the item exists before deletion
+        // Find and verify the item exists
         Optional<CartItem> existingItem = cartItemRepository
-                .findByCartIdAndProductId(cart.getId(), productId);
+                .findByAccountIdAndProductId(accountId, productId);
 
         if (existingItem.isEmpty()) {
-            throw new RuntimeException("Product not found in cart");
+            throw new CustomException(HttpStatus.NOT_FOUND, ErrorCode.PRODUCT_NOT_IN_CART);
         }
 
-        cartItemRepository.deleteByCartIdAndProductId(cart.getId(), productId);
-
-        return getCart(accountId);
+        cartItemRepository.deleteByAccountIdAndProductId(accountId, productId);
+        return getCart();
     }
 
     @Transactional
-    public void clearCart(Integer accountId) {
-        Cart cart = cartRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-
-        cartItemRepository.deleteByCartId(cart.getId());
+    public void clearCart() {
+        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
+        cartItemRepository.deleteByAccountId(accountId);
     }
 
-    private Cart getOrCreateCart(Integer accountId) {
-        return cartRepository.findByAccountId(accountId)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setAccountId(accountId);
-                    return cartRepository.save(newCart);
-                });
-    }
-
-    private CartResponse createEmptyCartResponse(Integer accountId) {
-        return new CartResponse(
-                null,
-                accountId,
-                List.of(),
-                BigDecimal.ZERO,
-                null,
-                null
-        );
-    }
-
-    private CartResponse mapToCartResponse(Cart cart, List<CartItem> cartItems) {
+    private CartResponse mapToCartResponse(Integer accountId, List<CartItem> cartItems) {
         List<CartResponse.CartItemResponse> itemResponses = cartItems.stream()
                 .map(item -> new CartResponse.CartItemResponse(
                         item.getId(),
@@ -160,13 +155,23 @@ public class CartService {
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Calculate timestamps from cart items
+        LocalDateTime earliestCreated = cartItems.stream()
+                .map(CartItem::getCreatedAt)
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+
+        LocalDateTime latestUpdated = cartItems.stream()
+                .map(CartItem::getUpdatedAt)
+                .max(LocalDateTime::compareTo)
+                .orElse(null);
+
         return new CartResponse(
-                cart.getId(),
-                cart.getAccountId(),
+                accountId,
                 itemResponses,
                 totalAmount,
-                cart.getCreatedAt(),
-                cart.getUpdatedAt()
+                earliestCreated,
+                latestUpdated
         );
     }
 }

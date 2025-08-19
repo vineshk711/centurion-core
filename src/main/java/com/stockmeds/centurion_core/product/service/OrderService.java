@@ -16,6 +16,7 @@ import com.stockmeds.centurion_core.product.repository.OrderItemRepository;
 import com.stockmeds.centurion_core.product.repository.OrderRepository;
 import com.stockmeds.centurion_core.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +24,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class OrderService {
 
@@ -48,78 +51,123 @@ public class OrderService {
 
     @Transactional
     public OrderResponse placeOrder(PlaceOrderRequest request) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
-        // Create new order
-        Order order = new Order();
-        order.setAccountId(accountId);
-        order.setOrderNumber(generateOrderNumber());
-        order.setShippingAddress(request.shippingAddress());
-        order.setBillingAddress(request.billingAddress());
-        order.setPaymentMethod(request.paymentMethod());
-        order.setNotes(request.notes());
-        order.setStatus(Status.PENDING);
-        order.setPaymentStatus(PaymentStatus.PENDING);
+        Integer accountId = getCurrentAccountId();
 
-        // Save order first to get ID
-        order = orderRepository.save(order);
+        // Create order items from request items
+        List<OrderItemData> orderItemsData = request.items().stream()
+                .map(this::createOrderItemFromRequest)
+                .toList();
 
-        // Calculate totals
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        BigDecimal totalTax = BigDecimal.ZERO;
-
-        // Create order items
-        for (PlaceOrderRequest.OrderItemRequest itemRequest : request.items()) {
-            ProductEntity product = productRepository.findById(itemRequest.productId())
-                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.PRODUCT_NOT_FOUND));
-
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(product);
-            orderItem.setQuantity(itemRequest.quantity());
-            orderItem.setUnitPrice(product.getPrice());
-
-            // Calculate tax for this item
-            BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.quantity()));
-            BigDecimal itemTax = BigDecimal.ZERO;
-
-            if (product.getGstPercentage() != null) {
-                itemTax = itemTotal.multiply(product.getGstPercentage()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            }
-
-            orderItem.setTaxAmount(itemTax);
-            orderItemRepository.save(orderItem);
-
-            totalAmount = totalAmount.add(itemTotal);
-            totalTax = totalTax.add(itemTax);
-        }
-
-        // Update order totals
-        order.setTotalAmount(totalAmount);
-        order.setTaxAmount(totalTax);
-        order.setDiscountAmount(BigDecimal.ZERO);
-        order.setFinalAmount(totalAmount.add(totalTax));
-
-        order = orderRepository.save(order);
-
-        //TODO: is this required?
-        // Clear account's cart after successful order
-        clearAccountCart(accountId);
-
-        return mapToOrderResponse(order);
+        // Validate all items and proceed with order creation
+        return validateAndCreateOrder(accountId, request, orderItemsData, "Cannot place order due to the following issues: ");
     }
 
     @Transactional
     public OrderResponse placeOrderFromCart(PlaceOrderRequest request) {
-        Integer accountId = CenturionThreadLocal.getUserAccountAttributes().getAccountId();
+        Integer accountId = getCurrentAccountId();
 
-        // Get cart items directly by accountId (no Cart entity needed)
+        // Get cart items and validate
         List<CartItem> cartItems = cartItemRepository.findByAccountId(accountId);
-
         if (cartItems.isEmpty()) {
             throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.CART_EMPTY);
         }
 
-        // Create new order
+        // Create order items from cart items
+        List<OrderItemData> orderItemsData = cartItems.stream()
+                .map(this::createOrderItemFromCart)
+                .toList();
+
+        // Validate all items and proceed with order creation
+        return validateAndCreateOrder(accountId, request, orderItemsData, "Cannot place order from cart due to the following issues: ");
+    }
+
+
+    private OrderResponse validateAndCreateOrder(Integer accountId, PlaceOrderRequest request,
+                                                List<OrderItemData> orderItemsData, String errorPrefix) {
+        // Check if the initial order items list is empty
+        if (orderItemsData == null || orderItemsData.isEmpty()) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NO_VALID_ITEMS_TO_ORDER,
+                "Order must contain at least one item");
+        }
+
+        List<OrderItemData> validOrderItems = new ArrayList<>();
+        List<String> stockIssues = new ArrayList<>();
+
+        for (OrderItemData itemData : orderItemsData) {
+            try {
+                // Validate quantity
+                if (itemData.quantity() <= 0) {
+                    stockIssues.add(String.format("Product '%s' (ID: %d): Invalid quantity (%d)",
+                            itemData.product().getName(), itemData.product().getId(), itemData.quantity()));
+                    continue;
+                }
+
+                // Validate product price
+                if (itemData.product().getPrice() == null || itemData.product().getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                    stockIssues.add(String.format("Product '%s' (ID: %d): Invalid price",
+                            itemData.product().getName(), itemData.product().getId()));
+                    continue;
+                }
+
+                // Check stock availability with detailed messaging
+                if (itemData.product().getStockQuantity() == null || itemData.product().getStockQuantity() <= 0) {
+                    stockIssues.add(String.format("Product '%s' (ID: %d): Out of stock",
+                            itemData.product().getName(), itemData.product().getId()));
+                    continue;
+                }
+
+                if (itemData.product().getStockQuantity() < itemData.quantity()) {
+                    stockIssues.add(String.format("Product '%s' (ID: %d): Insufficient stock (Requested: %d, Available: %d)",
+                            itemData.product().getName(), itemData.product().getId(),
+                            itemData.quantity(), itemData.product().getStockQuantity()));
+                    continue;
+                }
+
+                // All validations passed, add to valid order items
+                validOrderItems.add(itemData);
+
+            } catch (Exception e) {
+                log.error("Error processing item for product {}: {}", itemData.product().getId(), e.getMessage());
+                stockIssues.add(String.format("Product '%s' (ID: %d): %s",
+                        itemData.product().getName(), itemData.product().getId(), e.getMessage()));
+            }
+        }
+
+        // If there are any stock issues, inform the user and fail the order
+        if (!stockIssues.isEmpty()) {
+            String errorMessage = errorPrefix + String.join("; ", stockIssues);
+            log.warn("Order placement failed for account {}: {}", accountId, errorMessage);
+            throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.INSUFFICIENT_STOCK, errorMessage);
+        }
+
+        // All items are valid, proceed with order creation
+        return createAndProcessOrder(accountId, request, validOrderItems);
+    }
+
+    private OrderItemData createOrderItemFromRequest(PlaceOrderRequest.OrderItemRequest itemRequest) {
+        ProductEntity product = productRepository.findById(itemRequest.productId())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.PRODUCT_NOT_FOUND));
+
+        // Handle null price gracefully - let validation logic handle the error later
+        BigDecimal price = product.getPrice();
+        BigDecimal itemTotal = price != null ?
+            price.multiply(BigDecimal.valueOf(itemRequest.quantity())) :
+            BigDecimal.ZERO;
+
+        return new OrderItemData(product, itemRequest.quantity(), price, itemTotal);
+    }
+
+    private OrderItemData createOrderItemFromCart(CartItem cartItem) {
+        return new OrderItemData(
+                cartItem.getProduct(),
+                cartItem.getQuantity(),
+                cartItem.getUnitPrice(),
+                cartItem.getTotalPrice()
+        );
+    }
+
+    private OrderResponse createAndProcessOrder(Integer accountId, PlaceOrderRequest request, List<OrderItemData> orderItemsData) {
+        // Create new order with all properties set
         Order order = new Order();
         order.setAccountId(accountId);
         order.setOrderNumber(generateOrderNumber());
@@ -130,48 +178,77 @@ public class OrderService {
         order.setStatus(Status.PENDING);
         order.setPaymentStatus(PaymentStatus.PENDING);
 
-        // Save order first to get ID
-        order = orderRepository.save(order);
-
-        // Calculate totals
+        // Calculate totals, create order items, and update stock in one pass
         BigDecimal totalAmount = BigDecimal.ZERO;
         BigDecimal totalTax = BigDecimal.ZERO;
+        List<OrderItem> orderItems = new ArrayList<>();
+        List<ProductEntity> productsToUpdate = new ArrayList<>();
 
-        // Create order items from cart items
-        for (CartItem cartItem : cartItems) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(cartItem.getProduct());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setUnitPrice(cartItem.getUnitPrice());
+        for (OrderItemData itemData : orderItemsData) {
+            // Final stock check before deduction (double-check for race conditions)
+            ProductEntity product = productRepository.findById(itemData.product().getId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, ErrorCode.PRODUCT_NOT_FOUND));
 
-            // Calculate tax for this item
-            BigDecimal itemTotal = cartItem.getTotalPrice();
-            BigDecimal itemTax = BigDecimal.ZERO;
-
-            if (cartItem.getProduct().getGstPercentage() != null) {
-                itemTax = itemTotal.multiply(cartItem.getProduct().getGstPercentage()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            if (product.getStockQuantity() == null || product.getStockQuantity() < itemData.quantity()) {
+                log.error("Stock changed during order processing for product {}: requested {}, available {}",
+                        product.getId(), itemData.quantity(), product.getStockQuantity());
+                throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.INSUFFICIENT_STOCK);
             }
 
-            orderItem.setTaxAmount(itemTax);
-            orderItemRepository.save(orderItem);
+            // Calculate tax for this item
+            BigDecimal itemTax = itemData.product().getGstPercentage() != null
+                    ? itemData.itemTotal()
+                    .multiply(itemData.product().getGstPercentage())
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
 
-            totalAmount = totalAmount.add(itemTotal);
+            // Create order item (will be saved after order is persisted)
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(itemData.product());
+            orderItem.setQuantity(itemData.quantity());
+            orderItem.setUnitPrice(itemData.unitPrice());
+            orderItem.setTaxAmount(itemTax);
+            orderItems.add(orderItem);
+
+            // Deduct stock quantity
+            product.setStockQuantity(product.getStockQuantity() - itemData.quantity());
+            productsToUpdate.add(product);
+
+            log.info("Deducted {} units from product {} stock. New stock: {}",
+                    itemData.quantity(), product.getId(), product.getStockQuantity());
+
+            // Accumulate totals
+            totalAmount = totalAmount.add(itemData.itemTotal());
             totalTax = totalTax.add(itemTax);
         }
 
-        // Update order totals
+        // Set calculated totals on order before saving
         order.setTotalAmount(totalAmount);
         order.setTaxAmount(totalTax);
         order.setDiscountAmount(BigDecimal.ZERO);
         order.setFinalAmount(totalAmount.add(totalTax));
 
+        // Save order once with all calculated values
         order = orderRepository.save(order);
 
-        // Clear account's cart after successful order
-        clearAccountCart(accountId);
+        // Bulk save all order items and update product stocks
+        orderItemRepository.saveAll(orderItems);
+        productRepository.saveAll(productsToUpdate);
 
+        // Clear cart and return response
+        clearAccountCart(accountId);
         return mapToOrderResponse(order);
+    }
+    private void clearAccountCart(Integer accountId) {
+        // Directly delete cart items by accountId (no Cart entity needed)
+        cartItemRepository.deleteByAccountId(accountId);
+    }
+
+    private String generateOrderNumber() {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String uuid = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return String.format("ORD-%s", timestamp);
     }
 
     //TODO: paginate this API
@@ -225,17 +302,6 @@ public class OrderService {
         return mapToOrderResponse(order);
     }
 
-    private void clearAccountCart(Integer accountId) {
-        // Directly delete cart items by accountId (no Cart entity needed)
-        cartItemRepository.deleteByAccountId(accountId);
-    }
-
-    private String generateOrderNumber() {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String uuid = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        return "ORD-" + timestamp + "-" + uuid;
-    }
-
     private OrderResponse mapToOrderResponse(Order order) {
         List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
 
@@ -274,4 +340,15 @@ public class OrderService {
                 order.getUpdatedAt()
         );
     }
+
+    private Integer getCurrentAccountId() {
+        return CenturionThreadLocal.getUserAccountAttributes().getAccountId();
+    }
+
+    private record OrderItemData(
+            ProductEntity product,
+            Integer quantity,
+            BigDecimal unitPrice,
+            BigDecimal itemTotal
+    ) {}
 }
